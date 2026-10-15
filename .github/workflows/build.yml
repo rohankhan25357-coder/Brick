@@ -15,10 +15,16 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
 
+      - name: Download J2ME API Stubs
+        run: |
+          mkdir -p lib
+          curl -L -o lib/midpapi20.jar https://repo1.maven.org/maven2/org/microemu/midpapi20/2.0.4/midpapi20-2.0.4.jar
+          curl -L -o lib/cldcapi11.jar https://repo1.maven.org/maven2/org/microemu/cldcapi11/2.0.4/cldcapi11-2.0.4.jar
+
       - name: Compile and Create JAR
         run: |
           mkdir -p build/classes
-          javac -encoding UTF-8 ZefrixBrickBreakerMIDlet.java -d build/classes || javac ZefrixBrickBreakerMIDlet.java -d build/classes
+          javac -encoding UTF-8 -bootclasspath lib/midpapi20.jar:lib/cldcapi11.jar ZefrixBrickBreakerMIDlet.java -d build/classes
           cd build/classes
           jar cf ../../ZefrixBrickBreaker.jar *
 
