@@ -15,18 +15,31 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
 
-      - name: Download J2ME API Stubs
+      - name: Setup J2ME Libraries
         run: |
           mkdir -p lib
-          curl -L -o lib/midpapi20.jar https://repo1.maven.org/maven2/org/microemu/midpapi20/2.0.4/midpapi20-2.0.4.jar
-          curl -L -o lib/cldcapi11.jar https://repo1.maven.org/maven2/org/microemu/cldcapi11/2.0.4/cldcapi11-2.0.4.jar
+          curl -L -s -o lib/midpapi20.jar "https://repo1.maven.org/maven2/org/microemu/midpapi20/2.0.4/midpapi20-2.0.4.jar"
+          curl -L -s -o lib/cldcapi11.jar "https://repo1.maven.org/maven2/org/microemu/cldcapi11/2.0.4/cldcapi11-2.0.4.jar"
 
-      - name: Compile and Create JAR
+      - name: Compile Java Code
         run: |
           mkdir -p build/classes
-          javac -encoding UTF-8 -bootclasspath lib/midpapi20.jar:lib/cldcapi11.jar ZefrixBrickBreakerMIDlet.java -d build/classes
+          javac -source 1.8 -target 1.8 -cp "lib/midpapi20.jar:lib/cldcapi11.jar" -d build/classes ZefrixBrickBreakerMIDlet.java
+
+      - name: Create Manifest
+        run: |
+          mkdir -p build/META-INF
+          echo "MIDlet-1: ZefrixBrickBreaker, /icon.png, ZefrixBrickBreakerMIDlet" > build/META-INF/MANIFEST.MF
+          echo "MIDlet-Name: ZefrixBrickBreaker" >> build/META-INF/MANIFEST.MF
+          echo "MIDlet-Vendor: Zefrix Studio" >> build/META-INF/MANIFEST.MF
+          echo "MIDlet-Version: 1.0.0" >> build/META-INF/MANIFEST.MF
+          echo "MicroEdition-Configuration: CLDC-1.1" >> build/META-INF/MANIFEST.MF
+          echo "MicroEdition-Profile: MIDP-2.0" >> build/META-INF/MANIFEST.MF
+
+      - name: Create JAR File
+        run: |
           cd build/classes
-          jar cf ../../ZefrixBrickBreaker.jar *
+          jar cvfm ../../ZefrixBrickBreaker.jar ../META-INF/MANIFEST.MF *
 
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v4
